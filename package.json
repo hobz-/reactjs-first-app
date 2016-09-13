@@ -1,0 +1,27 @@
+{
+  "name": "firstapp",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "jquery": "~3.1.0",
+    "react-dom": "~15.3.1",
+    "react": "~15.3.1",
+    "react-bootstrap": "~0.30.3",
+    "react-image-responsive": "~1.0.18"
+  },
+  "devDependencies": {
+    "babel-loader": "~6.2.5",
+    "webpack": "~1.13.2",
+    "html-webpack-plugin": "~2.22.0",
+    "webpack-dev-server": "~1.15.1",
+    "babel-preset-react": "~6.11.1",
+    "babel-core": "~6.14.0"
+  },
+  "scripts": {
+    "production": "webpack -p",
+    "start": "webpack-dev-server"
+  },
+  "author": "",
+  "license": "BSD-2-Clause"
+}
