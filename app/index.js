@@ -26,6 +26,9 @@ var ProductTable = React.createClass({
 	getInitialState: function() {
 		return ({isSettled: false})
 	},
+	handleSettle: function() {
+		this.setState({isSettled: true});
+	},
 	render: function() {
 		return (
 				<Col sm={10} md={10}>
@@ -43,10 +46,11 @@ var ProductTable = React.createClass({
 					<ProductRow 
 						rowName="Large Poster"
 						price="10"
+						isSettled={this.state.isSettled}
 					/>
 					<Row className="show-grid">
 						<Col sm={8} md={8}></Col>
-						<Col sm={1} md={1}><SettleButton /></Col>
+						<Col sm={1} md={1}><SettleButton handleClick={this.handleSettle} /></Col>
 					</Row>
 				</Col>
 		);
@@ -72,7 +76,7 @@ var ProductRow = React.createClass({
 		totalIn: 12,
 		comp: 0,
 		countOut: 5,
-		totalOut: 7
+		totalOut: 7,
 	});
  },
  onUpdate: function(obj) {
@@ -100,6 +104,7 @@ var ProductRow = React.createClass({
 						value={this.state.countIn}
 						type={"countIn"}
 						onUpdate={this.onUpdate}
+						isDisabled={this.props.isSettled}
 					/>
 				</Col>
 				<Col sm={1} md={1}>
@@ -107,6 +112,7 @@ var ProductRow = React.createClass({
 						value={this.state.add}
 						type={"add"}
 						onUpdate={this.onUpdate}
+						isDisabled={this.props.isSettled}
 					/>
 				</Col>
 				<Col sm={1} md={1}>
@@ -119,6 +125,7 @@ var ProductRow = React.createClass({
 						value={this.state.comp}
 						type={"comp"}
 						onUpdate={this.onUpdate}
+						isDisabled={this.props.isSettled}
 					/>
 				</Col>
 				<Col sm={1} md={1}>
@@ -126,6 +133,7 @@ var ProductRow = React.createClass({
 						value={this.state.countOut}
 						type={"countOut"}
 						onUpdate={this.onUpdate}
+						isDisabled={this.props.isSettled}
 					/>
 				</Col>
 				<Col sm={1} md={1}>
@@ -141,8 +149,7 @@ var ProductRow = React.createClass({
 
 var FormField = React.createClass({
 	getInitialState: function() {
-		return {value: this.props.value,
-				isDisabled: false}
+		return {value: this.props.value}
 	},
 	handleChange: function(event) {
 		var obj = {}
@@ -154,7 +161,7 @@ var FormField = React.createClass({
 		return(
 			<FormControl
 			type="text"
-			disabled={this.state.isDisabled}
+			disabled={this.props.isDisabled ? true : false}
 			value={this.state.value}
 			onChange={this.handleChange}
 			/>
@@ -178,9 +185,16 @@ var TotalDiv = React.createClass({
 });
 
 var SettleButton = React.createClass({
+	getInitialState: function() {
+		return {settled: false};
+	},
+	/*handleClick: function() {
+		this.setState({settled: true});
+		console.log("it works!");
+	},*/
 	render: function() {
 		return(
-			<Button bsStyle="info">SETTLE</Button>
+			<Button bsStyle="info" onClick={this.props.handleClick}>SETTLE</Button>
 		);
 	}
 });
