@@ -8,8 +8,7 @@ var Col = require('react-bootstrap').Col;
 var FormControl = require('react-bootstrap').FormControl;
 var Image = require('react-bootstrap').Image;
 var Button = require('react-bootstrap').Button;
-
-
+var Overlay = require('react-bootstrap').Overlay;
 
 var ProductPage = React.createClass({
 	render: function() {
@@ -24,18 +23,16 @@ var ProductPage = React.createClass({
 
 var ProductTable = React.createClass({
 	getInitialState: function() {
-		return ({isSettled: false,
+		return ({prod1Price: "10.00",
+				 notes:"No Notes",
+				 isSettled: false,
 				 isValid: false,
 				 flashMsg: ""})
 	},
 	handleSettle: function() {
 		if (this.state.isValid) {
-			console.log(this.state);
-			this.setState({isSettled: true,
-						   flashMsg: ""});
+			this.setState({isSettled: true});
 		}
-		else
-			this.setState({flashMsg: "Invalid Form Inputs"})
 	},
 	isTableValid: function(rowState) {
 		var invalidForm = 0;
@@ -44,9 +41,17 @@ var ProductTable = React.createClass({
 				invalidForm++;
 		};
 		if (invalidForm===0)
-			this.setState({isValid: true});
+			this.setState({flashMsg: "",
+							isValid: true});
 		else 
-			this.setState({isValid: false});
+			this.setState({flashMsg: "Invalid Form Inputs",
+						   isValid: false});
+	},
+	updatePrice: function(obj) {
+		this.setState({prod1Price: obj["price"]});
+	},
+	updateNotes: function(obj) {
+		this.setState(obj);
 	},
 	render: function() {
 		return (
@@ -64,12 +69,16 @@ var ProductTable = React.createClass({
 					</Row>
 					<ProductRow 
 						rowName="Large Poster"
-						price="10"
+						price={this.state.prod1Price}
 						isSettled={this.state.isSettled}
 						isValid={this.isTableValid}
 					/>
 					<Row className="show-grid">
-						<Col sm={4} md={4}></Col>
+						<Col sm={2} md={2}></Col>
+						<Col sm={2} md={2}><MoreButton productPrice={this.state.prod1Price} 
+													   updatePrice={this.updatePrice}
+													   notes={this.state.notes}
+													   updateNotes={this.updateNotes}/></Col>
 						<Col sm={4} md={4}><FlashMsg msg={this.state.flashMsg} /></Col>
 						<Col sm={1} md={1}><SettleButton handleClick={this.handleSettle} /></Col>
 					</Row>
@@ -139,6 +148,7 @@ var ProductRow = React.createClass({
 						value={this.state.countIn}
 						type={"countIn"}
 						onUpdate={this.onUpdate}
+						float={false}
 						isDisabled={this.props.isSettled}
 					/>
 				</Col>
@@ -147,6 +157,7 @@ var ProductRow = React.createClass({
 						value={this.state.add}
 						type={"add"}
 						onUpdate={this.onUpdate}
+						float={false}
 						isDisabled={this.props.isSettled}
 					/>
 				</Col>
@@ -160,6 +171,7 @@ var ProductRow = React.createClass({
 						value={this.state.comp}
 						type={"comp"}
 						onUpdate={this.onUpdate}
+						float={false}
 						isDisabled={this.props.isSettled}
 					/>
 				</Col>
@@ -168,6 +180,7 @@ var ProductRow = React.createClass({
 						value={this.state.countOut}
 						type={"countOut"}
 						onUpdate={this.onUpdate}
+						float={false}
 						isDisabled={this.props.isSettled}
 					/>
 				</Col>
@@ -184,7 +197,8 @@ var ProductRow = React.createClass({
 
 var FormField = React.createClass({
 	getInitialState: function() {
-		return {value: this.props.value}
+		return {value: this.props.value,
+				float: this.props.float}
 	},
 	handleChange: function(event) {
 		var obj = {}
@@ -195,10 +209,17 @@ var FormField = React.createClass({
 		}
 	},
 	isValid: function(input) {
-		if (input === "" || (!isNaN(parseInt(input)) && input % 1 === 0))
-			return true;
-		else
-			return false;
+		if (!this.state.float) {
+			if (input === "" || (!isNaN(parseInt(input)) && input % 1 === 0))
+				return true;
+			else
+				return false;
+		} else if (this.state.float) {
+			if (input === "" || (!isNaN(parseFloat(input))))
+				return true;
+			else
+				return false;
+		}
 	},
 	render: function() {
 		return(
@@ -222,6 +243,76 @@ var TotalDiv = React.createClass({
 				padding: '10px'
 			}}
 			>{this.props.value}
+			</div>
+		);
+	}
+});
+
+var MoreButton = React.createClass({
+	getInitialState: function() {
+		return {show: false}
+	},
+	toggle: function() {
+		this.setState({show: !this.state.show });
+	},
+	render: function() {
+		return(
+			<div>
+				<Button ref="target" onClick={this.toggle}>
+					MORE
+				</Button>
+
+				<Overlay
+					show={this.state.show}
+					onHide={() => this.setState({ show: false })}
+					placement="right"
+					container={this}
+					target={() => ReactDOM.findDOMNode(this.refs.target)}
+				>
+					<MorePopOver price={this.props.productPrice}
+								 setPrice={this.props.updatePrice}
+								 notes={this.props.notes}
+								 setNotes={this.props.updateNotes} />
+				</Overlay>
+			</div>
+		);
+	}
+});
+
+var MorePopOver = React.createClass({
+	onUpdatePrice: function(obj) {
+		this.props.setPrice({price: obj["price"]}); 
+ 	},
+ 	onUpdateNotes: function(e) {
+ 		this.props.setNotes({notes: e.target.value});
+ 	},
+	render: function() {
+		return(
+			<div
+			  style={{
+			  	position: 'absolute',
+			  	width: '150%',
+			  	backgroundColor: '#EEE',
+			  	boxShadow: '0 5px 10 px rgba(0, 0, 0, 0.2)',
+			  	border: '1px solid #CCC',
+			  	borderRadius: 5,
+			  	marginTop: 5,
+			  	padding: 10
+			  }}
+			 > 
+				Price: <FormField
+					value={this.props.price}
+					type={"price"}
+					onUpdate={this.onUpdatePrice}
+					isDisabled={false}
+					float={true}
+				/>
+				Notes:	<FormControl
+					value={this.props.notes}
+					componentClass="textArea"
+					onChange={this.onUpdateNotes}
+					disabled={false}
+				/>
 			</div>
 		);
 	}
