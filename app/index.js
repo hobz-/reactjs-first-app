@@ -24,10 +24,29 @@ var ProductPage = React.createClass({
 
 var ProductTable = React.createClass({
 	getInitialState: function() {
-		return ({isSettled: false})
+		return ({isSettled: false,
+				 isValid: false,
+				 flashMsg: ""})
 	},
 	handleSettle: function() {
-		this.setState({isSettled: true});
+		if (this.state.isValid) {
+			console.log(this.state);
+			this.setState({isSettled: true,
+						   flashMsg: ""});
+		}
+		else
+			this.setState({flashMsg: "Invalid Form Inputs"})
+	},
+	isTableValid: function(rowState) {
+		var invalidForm = 0;
+		for (var prop in rowState) {
+			if (rowState[prop] < 0 || isNaN(rowState[prop]))
+				invalidForm++;
+		};
+		if (invalidForm===0)
+			this.setState({isValid: true});
+		else 
+			this.setState({isValid: false});
 	},
 	render: function() {
 		return (
@@ -47,9 +66,11 @@ var ProductTable = React.createClass({
 						rowName="Large Poster"
 						price="10"
 						isSettled={this.state.isSettled}
+						isValid={this.isTableValid}
 					/>
 					<Row className="show-grid">
-						<Col sm={8} md={8}></Col>
+						<Col sm={4} md={4}></Col>
+						<Col sm={4} md={4}><FlashMsg msg={this.state.flashMsg} /></Col>
 						<Col sm={1} md={1}><SettleButton handleClick={this.handleSettle} /></Col>
 					</Row>
 				</Col>
@@ -64,6 +85,17 @@ var ProductImage = React.createClass({
 				<Image src="app/bsb_poster.jpg" responsive></Image>
 			</Col>
 		);
+	}
+});
+
+var FlashMsg = React.createClass({
+	render: function() {
+		return (<div style={{
+				textAlign: 'right',
+				color:'red',
+				padding: '10px'
+			}}
+			>{this.props.msg}</div>);
 	}
 });
 
@@ -87,12 +119,15 @@ var ProductRow = React.createClass({
  	};
 
 	var totalIn = parseInt(productState.countIn) + parseInt(productState.add);
-	productState['totalIn'] = totalIn;
+	if (parseInt(totalIn))
+		productState['totalIn'] = totalIn;
 
 	var totalOut = parseInt(totalIn) - parseInt(productState.countOut) - parseInt(productState.comp);
-	productState['totalOut'] = totalOut;
+	if (parseInt(totalOut))
+		productState['totalOut'] = totalOut;
 
 	this.setState(productState); 
+	this.props.isValid(this.state);
  },
  render: function() {
 	return (
@@ -153,9 +188,17 @@ var FormField = React.createClass({
 	},
 	handleChange: function(event) {
 		var obj = {}
-		obj[this.props.type] = event.target.value;
-		this.setState({value: event.target.value});
-		this.props.onUpdate(obj);
+		if (this.isValid(event.target.value)) {
+			obj[this.props.type] = event.target.value;
+			this.setState({value: event.target.value});
+			this.props.onUpdate(obj);
+		}
+	},
+	isValid: function(input) {
+		if (input === "" || (!isNaN(parseInt(input)) && input % 1 === 0))
+			return true;
+		else
+			return false;
 	},
 	render: function() {
 		return(
@@ -188,10 +231,6 @@ var SettleButton = React.createClass({
 	getInitialState: function() {
 		return {settled: false};
 	},
-	/*handleClick: function() {
-		this.setState({settled: true});
-		console.log("it works!");
-	},*/
 	render: function() {
 		return(
 			<Button bsStyle="info" onClick={this.props.handleClick}>SETTLE</Button>
